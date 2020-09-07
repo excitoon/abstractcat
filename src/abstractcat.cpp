@@ -80,6 +80,8 @@ void * connect_thread(void * arg)
             }
             usleep(50000);
         }
+        else
+            break;
     }
 
     forward_info * info = (forward_info *) malloc(sizeof(forward_info)*2);
