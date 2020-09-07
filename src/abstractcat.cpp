@@ -211,6 +211,8 @@ int main(int argc, char ** argv)
         pthread_attr_init(&attr);
         pthread_create(&tid, &attr, connect_thread, (void *)client_socket);
 
+        usleep(50000); // This delay is critical to not mix up order of connections.
+
         if (connections == max_connections)
         {
             close(server_socket);
