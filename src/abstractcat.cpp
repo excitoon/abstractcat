@@ -66,12 +66,20 @@ void * connect_thread(void * arg)
     logaddr.sun_family = AF_UNIX;
     strcpy(logaddr.sun_path + (is_abstract_destination ? 1 : 0), destination_name + (is_abstract_destination ? 1 : 0));
 
-    int result = connect(destination_socket, (struct sockaddr *) &logaddr, sun_len);
-    if (result != 0)
+    const int max_attempts = 20;
+    for (int attempt = 0; attempt < max_attempts; ++attempt)
     {
-        printf("[abstractcat] connect() failed: [%d][%s]\n", errno, strerror(errno));
-        if (child) kill(child, SIGTERM);
-        exit(-1);
+        int result = connect(destination_socket, (struct sockaddr *) &logaddr, sun_len);
+        if (result != 0)
+        {
+            printf("[abstractcat] connect() failed: [%d][%s]\n", errno, strerror(errno));
+            if (attempt == max_attempts - 1)
+            {
+                if (child) kill(child, SIGTERM);
+                exit(-1);
+            }
+            usleep(50000);
+        }
     }
 
     forward_info * info = (forward_info *) malloc(sizeof(forward_info)*2);
